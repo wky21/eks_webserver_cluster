@@ -13,7 +13,7 @@ provider "aws" {
 }
 
 # S3 bucket to hold Terraform state
-resource "aws_s3_bucket" "tf_state" {
+resource "aws_s3_bucket" "wky21_eks_tf_state" {
   bucket = var.bucket_name
   acl    = "private"
 
@@ -36,7 +36,7 @@ resource "aws_s3_bucket" "tf_state" {
 
 # Block public access to the bucket
 resource "aws_s3_bucket_public_access_block" "block" {
-  bucket = aws_s3_bucket.tf_state.id
+  bucket = aws_s3_bucket.wky21_eks_tf_state.id
 
   block_public_acls       = true
   block_public_policy     = true
@@ -58,7 +58,7 @@ resource "aws_dynamodb_table" "tf_lock" {
 
 output "s3_bucket_id" {
   description = "ID of the S3 bucket created for Terraform state"
-  value       = aws_s3_bucket.tf_state.id
+  value       = aws_s3_bucket.wky21_eks_tf_state.id
 }
 
 output "dynamodb_table_name" {
