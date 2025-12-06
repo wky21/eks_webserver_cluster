@@ -2,9 +2,10 @@ name: CI - Build and Push to ECR
 
 on:
   workflow_dispatch:
-  #push:
-  #  branches:
-  #    - main
+  # Uncomment if you want to trigger on push
+  # push:
+  #   branches:
+  #     - main
 
 env:
   AWS_REGION: us-east-1    
@@ -20,23 +21,30 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 1. Checkout code
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # 2. Configure AWS credentials
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
 
+      # 3. Login to Amazon ECR
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
+      # 4. Build, tag, and push Docker image
       - name: Build, tag, and push image
         run: |
-          docker build -t $ECR_REPOSITORY:$COMMIT_SHA -f scripts/Dockerfile scripts/
+          # Build image with "latest" tag
+          docker build -t $ECR_REPOSITORY:$IMAGE_TAG -f scripts/Dockerfile scripts/
 
-          # Tag image with commit SHA and push
-          docker tag $ECR_REPOSITORY:$COMMIT_SHA ${{ steps.login-ecr.outputs.registry }}/$ECR_REPOSITORY:$COMMIT_SHA
-          docker push ${{ steps.login-ecr.outputs.registry }}/$ECR_REPOSITORY:$COMMIT_SHA
+          # Tag for ECR registry
+          docker tag $ECR_REPOSITORY:$IMAGE_TAG ${{ steps.login-ecr.outputs.registry }}/$ECR_REPOSITORY:$IMAGE_TAG
+
+          # Push to ECR
+          docker push ${{ steps.login-ecr.outputs.registry }}/$ECR_REPOSITORY:$IMAGE_TAG

@@ -1,0 +1,49 @@
+name: Terraform - Destroy EKS Cluster
+
+on:
+  workflow_dispatch:  # Manual trigger from GitHub Actions UI
+  # Optional: restrict branch if needed
+  # push:
+  #   branches:
+  #     - main
+
+jobs:
+  destroy-eks:
+    runs-on: ubuntu-latest
+
+    env:
+      AWS_REGION: us-east-1
+      TF_VAR_cluster_name: "eks-test-cluster"
+
+    steps:
+      # 1. Checkout repo
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # 2. Configure AWS credentials
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: arn:aws:iam::713881830177:role/GitHubActionsECRPushRole
+          aws-region: ${{ env.AWS_REGION }}
+
+      # 3. Setup Terraform
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.7.7
+
+      # 4. Initialize Terraform with existing backend
+      - name: Terraform Init
+        working-directory: terraform/eks
+        run: terraform init \
+          -backend-config="bucket=wky21-eks-tf-state" \
+          -backend-config="key=eks/terraform.tfstate" \
+          -backend-config="region=${{ env.AWS_REGION }}" \
+          -backend-config="dynamodb_table=tf-lock-table" \
+          -backend-config="encrypt=true"
+
+      # 5. Terraform Destroy (EKS only)
+      - name: Terraform Destroy
+        working-directory: terraform/eks
+        run: terraform destroy -auto-approve
