@@ -2,9 +2,9 @@ name: CI - Build and Push to ECR
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
+  #push:
+  #  branches:
+  #    - main
 
 env:
   AWS_REGION: us-east-1    
@@ -35,6 +35,8 @@ jobs:
 
       - name: Build, tag, and push image
         run: |
-          docker build -t $ECR_REPOSITORY:$IMAGE_TAG -f scripts/Dockerfile scripts/
-          docker tag $ECR_REPOSITORY:$IMAGE_TAG ${{ steps.login-ecr.outputs.registry }}/$ECR_REPOSITORY:$IMAGE_TAG
-          docker push ${{ steps.login-ecr.outputs.registry }}/$ECR_REPOSITORY:$IMAGE_TAG
+          docker build -t $ECR_REPOSITORY:$COMMIT_SHA -f scripts/Dockerfile scripts/
+
+          # Tag image with commit SHA and push
+          docker tag $ECR_REPOSITORY:$COMMIT_SHA ${{ steps.login-ecr.outputs.registry }}/$ECR_REPOSITORY:$COMMIT_SHA
+          docker push ${{ steps.login-ecr.outputs.registry }}/$ECR_REPOSITORY:$COMMIT_SHA
