@@ -34,20 +34,15 @@ jobs:
 
       # 4. Initialize Terraform with existing S3 + DynamoDB backend
       - name: Terraform Init
-        working-directory: terraform/modules/eks
-        run: terraform init \
-          -backend-config="bucket=wky21-eks-tf-state" \
-          -backend-config="key=eks/terraform.tfstate" \
-          -backend-config="region=${{ env.AWS_REGION }}" \
-          -backend-config="dynamodb_table=tf-lock-table" \
-          -backend-config="encrypt=true"
+        working-directory: terraform/environments/test
+        run: terraform init
 
       # 5. Terraform Plan
       - name: Terraform Plan
-        working-directory: terraform/modules/eks
+        working-directory: terraform/environments/test
         run: terraform plan -out=tfplan
 
       # 6. Terraform Apply
       - name: Terraform Apply
-        working-directory: terraform/modules/eks
+        working-directory: terraform/environments/test
         run: terraform apply -auto-approve tfplan
