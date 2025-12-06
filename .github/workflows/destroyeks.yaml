@@ -35,15 +35,15 @@ jobs:
 
       # 4. Initialize Terraform with existing backend
       - name: Terraform Init
-        working-directory: terraform/eks
-        run: terraform init \
-          -backend-config="bucket=wky21-eks-tf-state" \
-          -backend-config="key=eks/terraform.tfstate" \
-          -backend-config="region=${{ env.AWS_REGION }}" \
-          -backend-config="dynamodb_table=tf-lock-table" \
-          -backend-config="encrypt=true"
+        working-directory: terraform/environments/test
+        run: terraform init
 
-      # 5. Terraform Destroy (EKS only)
+      # 5. Terraform Plan Destroy
+      - name: Terraform Plan Destroy
+        working-directory: terraform/environments/test
+        run: terraform plan -destroy
+
+      # 6. Terraform Destroy
       - name: Terraform Destroy
-        working-directory: terraform/eks
+        working-directory: terraform/environments/test
         run: terraform destroy -auto-approve
